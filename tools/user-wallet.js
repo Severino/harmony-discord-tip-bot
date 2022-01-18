@@ -1,8 +1,10 @@
 const { ref, child, get, set } = require('firebase/database');
 const { firebaseConfig, encryptionPassword } = require('../config.json');
 var admin = require("firebase-admin");
-var serviceAccount = require(firebaseConfig.pathToServiceAccount);
-const { encryptPhrase, decryptPhrase, generatePrivateKey} = require('@harmony-js/crypto');
+
+var join = require("path").join
+var serviceAccount = require(join(__dirname, "..", firebaseConfig.pathToServiceAccount));
+const { encryptPhrase, decryptPhrase, generatePrivateKey } = require('@harmony-js/crypto');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -12,7 +14,7 @@ admin.initializeApp({
 function saveWallet(userId, privateKey, encryptedPrivateKey) {
     var ref = admin.database().ref();
     var usersRef = ref.child('users');
-    return usersRef.child(userId).set({ 
+    return usersRef.child(userId).set({
         privateKey: encryptedPrivateKey
     }).then(() => privateKey);
 }
@@ -36,7 +38,7 @@ module.exports = {
                 } else {
                     return createWalletForUser(userId);
                 }
-            }).catch(function(error) {
+            }).catch(function (error) {
                 console.error(error);
                 return null;
             });

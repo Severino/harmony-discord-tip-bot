@@ -5,7 +5,7 @@ const { MessageActionRow, MessageSelectMenu, MessageButton } = require('discord.
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('withdraw')
+        .setName('withdraw-one')
         .setDescription('Withdraw $ONE to a given address')
         .addStringOption(option => option.setName('address').setDescription('Address to send the $ONE to').setRequired(true))
         .addNumberOption(option => option.setName('amount').setDescription('Amount of $ONE to withdraw').setRequired(true)),

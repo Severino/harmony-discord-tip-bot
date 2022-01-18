@@ -1,24 +1,22 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { getWalletPrivateKey } = require('../tools/user-wallet');
-const { getBalance, sendTransaction, getAddress, sendToken } = require('../tools/harmony-util');
+const { getBalance, sendTransaction, getAddress } = require('../tools/harmony-util');
 const network = require('../tools/network');
-const token = require('../tools/token');
-const { getAddressFromPrivateKey } = require('@harmony-js/crypto');
 
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('tip')
-        .setDescription(`Tip the user a given amount of $${token.symbol}`)
+        .setName('flip')
+        .setDescription(`Tip the user a given amount of $ONE`)
         .addUserOption(option => option.setName('user').setDescription('The user').setRequired(true))
-        .addNumberOption(option => option.setName('amount').setDescription(`Amount of $${token.symbol} to tip`).setRequired(true)),
+        .addNumberOption(option => option.setName('amount').setDescription(`Amount of $ONE to tip`).setRequired(true)),
     async execute(interaction) {
         await interaction.reply('Working on it...');
 
         const amount = interaction.options.getNumber('amount');
 
         if (amount < 0.1 || amount > 100) {
-            return interaction.editReply(`The amount must be between 0.1 and 100 $${token.symbol}`);
+            return interaction.editReply(`The amount must be between 0.1 and 100 $ONE`);
         }
 
         const receivingUser = interaction.options.getUser('user');
@@ -34,24 +32,16 @@ module.exports = {
             return interaction.editReply('Error retrieving wallet information');
         }
 
-        var toAddress = getAddressFromPrivateKey(receiverPrivateKey)
         var senderBalance = await getBalance(senderPrivateKey);
 
         if (senderBalance < amount) {
-            return interaction.editReply(`Insufficient balance. Current balance: \`${senderBalance}\` $${token.symbol}`)
+            return interaction.editReply(`Insufficient balance. Current balance: \`${senderBalance}\` $ONE`)
         }
 
-        let transaction
-        try {
-            transaction = await sendToken(senderPrivateKey, toAddress, amount)
-        } catch (e) {
-            console.log(e)
-            return interaction.editReply(`Could not send token, maybe your one balance is too low?`)
-        }
-
-        console.log(receivingUser)
+        var receiverAddress = getAddress(receiverPrivateKey);
+        var transaction = await sendTransaction(senderPrivateKey, receiverAddress, amount);
 
         return interaction.editReply(
-            `Your tip of \`${amount}\` $${token.symbol} to ${receivingUser} was successful. \nTransaction details can be found [HERE](<${network.explorer}/tx/${transaction.result}>)`);
+            `Your tip of \`${amount}\` $ONE to ${receivingUser} was successful. \nTransaction details can be found [HERE](<${network.explorer}/tx/${transaction.result}>)`);
     },
 };

@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { getWalletPrivateKey } = require('../tools/user-wallet');
-const { getBalance, getAddress } = require('../tools/harmony-util');
+const { getBalance, getAddress, getOneBalance } = require('../tools/harmony-util');
+const token = require('../tools/token');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,13 +15,18 @@ module.exports = {
             await interaction.editReply('Error retrieving wallet information');
         }
 
-        var oneBalance = await getBalance(walletPrivateKey);
-        if (oneBalance == null){
-            return interaction.editReply('Error retrieving balance');
+        var balance = await getBalance(walletPrivateKey);
+        if (balance == null){
+            return interaction.editReply('Error retrieving token balance');
+        }
+
+        var oneBalance = await getOneBalance(walletPrivateKey)
+        if (balance == null){
+            return interaction.editReply('Error retrieving one balance');
         }
 
         var address = getAddress(walletPrivateKey);
 
-        return interaction.editReply(`Address: \`${address}\`\nBalance: \`${oneBalance}\` $ONE`);
+        return interaction.editReply(`Address: \`${address}\`\n${token.symbol} Balance: \`${balance}\`\nOne Balance: \`${oneBalance}\` $ONE`);
     }
 };
